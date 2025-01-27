@@ -54,7 +54,6 @@ class FlightSearch:
             for line in lines:
                 if line.startswith(token_item):
                     env.write(f"{token_item}={new_token_info}\n")
-                    print(token_item, new_token_info)
                 else:
                     env.write(line)
 
@@ -63,9 +62,19 @@ class FlightSearch:
         response = requests.get(url=self.AMADEUS_CITIES_ENDPOINT,
                                 headers=self.AMADEUS_CITIES_HEADERS,
                                 params={
-                                    'keyword':city
+                                    'keyword': city,
+                                    'max':1,
                                 })
-        return response.json()['data'][0]['iataCode']
+        try:
+            code = response.json()['data'][0]['iataCode']
+        except IndexError:
+            print(f"IndexError: No airport code found for {city}")
+            return "N/A"
+        except KeyError:
+            print(f"KeyError: No airport code found for {city}")
+            return "Not Found"
+
+        return code
 
 
     def search_flights(self):
