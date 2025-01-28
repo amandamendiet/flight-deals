@@ -1,8 +1,8 @@
 import os
-from pprint import pprint
 from dotenv import load_dotenv
 import requests
 
+# load env variable from env file
 load_dotenv()
 
 class DataManager:
@@ -17,14 +17,16 @@ class DataManager:
         }
         self.sheety_data = {}
 
+
     def get_sheet_data(self):
-        self.response = requests.get(url=self.SHEETY_ENDPOINT, headers=self.SHEETY_HEADERS)
-        self.sheety_data = self.response.json()
+        print("getting sheet data")
+        response = requests.get(url=self.SHEETY_ENDPOINT, headers=self.SHEETY_HEADERS)
+        self.sheety_data = response.json()
+
 
     def update_city_iata_code(self, id, iata_code):
-        self.response = requests.put(url=f"{self.SHEETY_ENDPOINT}/{id}",
+        print(f"updating iata code: {iata_code}")
+        return requests.put(url=f"{self.SHEETY_ENDPOINT}/{id}",
                                      headers=self.SHEETY_HEADERS,
                                      json={'price':{'iataCode':iata_code}})
-
-
 
