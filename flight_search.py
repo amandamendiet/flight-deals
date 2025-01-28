@@ -13,7 +13,7 @@ class FlightSearch:
     def __init__(self):
         self.AMADEUS_API_KEY = os.environ.get("AMADEUS_API_KEY")
         self.AMADEUS_API_SECRET = os.environ.get("AMADEUS_API_SECRET")
-        self.AMADEUS_TOKEN_ENDPOINT = "https://test.api.amadeus.com/v1/security/oauth2/token"
+        self.AMADEUS_TOKEN_ENDPOINT = os.environ.get("AMADEUS_TOKEN_ENDPOINT")
         self.AMADEUS_TOKEN_PARAMS = {
             'grant_type': 'client_credentials',
             'client_id': self.AMADEUS_API_KEY,
@@ -25,12 +25,12 @@ class FlightSearch:
         self.amadeus_token = os.environ.get("AMADEUS_API_TOKEN")
         self.amadeus_token_expiration = os.environ.get("AMADEUS_TOKEN_EXPIRATION")
         self.last_token_time = os.environ.get("LAST_TOKEN_TIME")
-        self.AMADEUS_CITIES_ENDPOINT = "https://test.api.amadeus.com/v1/reference-data/locations/cities"
+        self.AMADEUS_CITIES_ENDPOINT = os.environ.get("AMADEUS_CITIES_ENDPOINT")
         self.AMADEUS_CITIES_HEADERS = {
             'accept':'application/vnd.amadeus+json',
             'Authorization':f"Bearer {self.amadeus_token}",
         }
-        self.AMADEUS_SEARCH_ENDPOINT = "https://test.api.amadeus.com/v2/shopping/flight-offers"
+        self.AMADEUS_SEARCH_ENDPOINT = os.environ.get("AMADEUS_SEARCH_ENDPOINT")
         self.AMADEUS_SEARCH_HEADERS = {
             'accept':'application/vnd.amadeus+json',
             'Authorization': f"Bearer {self.amadeus_token}",
@@ -38,7 +38,7 @@ class FlightSearch:
 
 
     def refresh_token_if_needed(self):
-        print("refresing token if needed")
+        print("Refresing token if needed")
         current_time = time.time()
         if current_time - int(float(self.last_token_time)) >= int(self.amadeus_token_expiration) - TOKEN_BUFFER:
             self.get_new_amadeus_token()
@@ -48,7 +48,7 @@ class FlightSearch:
 
 
     def get_new_amadeus_token(self):
-        print("getting new token")
+        print("Getting new token")
         response = requests.post(url=self.AMADEUS_TOKEN_ENDPOINT, headers=self.AMADEUS_TOKEN_HEADERS, data=self.AMADEUS_TOKEN_PARAMS)
         print(response.json())
         token = response.json()['access_token']
@@ -93,7 +93,7 @@ class FlightSearch:
         return code
 
 
-    def search_flights(self, origin_airport, destination_airport, out_date, return_date):
+    def search_flights(self, origin_airport, destination_airport, out_date, return_date, is_direct=True):
         print("Searching flights")
         amadeus_search_params = {
             'originLocationCode':origin_airport,
@@ -102,6 +102,7 @@ class FlightSearch:
             'returnDate':return_date,
             'adults':1,
             'currencyCode':'USD',
+            'nonStop': "true" if is_direct else "false",
             'max':10,
         }
         response = requests.get(url=self.AMADEUS_SEARCH_ENDPOINT,headers=self.AMADEUS_SEARCH_HEADERS,params=amadeus_search_params)
