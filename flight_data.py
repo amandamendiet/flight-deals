@@ -68,7 +68,7 @@ def find_cheapest_flight(data):
         # if a cheaper price is found, update the current flight details with the cheaper flight details found.
         if price < lowest_price:
             lowest_price = price
-            print(f"lowest_price is now = {lowest_price}")
+            print(f"lowest_price is now = {lowest_price}USD")
             origin = flight["itineraries"][0]["segments"][0]["departure"]["iataCode"]
             destination = flight["itineraries"][0]["segments"][nr_stops]["arrival"]["iataCode"]
             out_date = flight["itineraries"][0]["segments"][0]["departure"]["at"].split("T")[0]
@@ -76,6 +76,6 @@ def find_cheapest_flight(data):
             nr_stops = len(flight["itineraries"][0]["segments"]) - 1
             cheapest_flight = FlightData(lowest_price, origin, destination, out_date, return_date, nr_stops)
 
-    print(f"Lowest price to {destination} is USD{lowest_price}")
+    print(f"Lowest price to {destination} is {lowest_price}USD")
 
     return cheapest_flight

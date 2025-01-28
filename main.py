@@ -47,22 +47,46 @@ print(f"Your Whatsapp list includes {user_whatsapp_list}")
 # ----------------------------------- SEARCH THE CHEAPEST FLIGHTS AND SEND WSP ---------------------------------- #
 
 # check if token is active before requesting
-flight_search.refresh_token_if_needed()
-    
-# request the cheapest flight from each city in the sheety
+if flight_search.refresh_token_if_needed():
+    time.sleep(2)
+# request the cheapest DIRECT flight from each city in the sheety
 for city in sheety_data['prices']:
+    print(f"Getting direct flights for {city['city']}...")
     time.sleep(2)
     flights = flight_search.search_flights(DEPARTURE_IATA_CODE,
                                            city['iataCode'],
                                            tomorrow.strftime('%Y-%m-%d'),
                                            six_month_from_today.strftime('%Y-%m-%d'))
     cheapest_flight = find_cheapest_flight(flights)
+
+    # if no DIRECT flights found, request INDIRECT flights
+    if cheapest_flight.price == "N/A":
+        print(f"No direct flight to {city['city']}. Looking for indirect flights...")
+        stopover_flights = flight_search.search_flights(
+            DEPARTURE_IATA_CODE,
+            city["iataCode"],
+            tomorrow.strftime('%Y-%m-%d'),
+            six_month_from_today.strftime('%Y-%m-%d'),
+            is_direct=False,
+        )
+        cheapest_flight = find_cheapest_flight(stopover_flights)
+        print(f"Cheapest indirect flight price is: {cheapest_flight.price}USD")
+
     # if cheapest flight is found send it as a wsp message
     if cheapest_flight.price != "N/A" and cheapest_flight.price < city["lowestPrice"]:
         print(f"Lower price flight found to {city['city']}!")
-        notification_manager.send_whatsapp(user_whatsapp_list,
-            message_body=f"Low price alert! Only {cheapest_flight.price}USD to fly "
-                         f"from {cheapest_flight.origin_airport} to {cheapest_flight.destination_airport} - {city['city']}, "
-                         f"on {cheapest_flight.out_date} until {cheapest_flight.return_date}."
-        )
+
+        # Customise the message depending on the number of stops
+        if cheapest_flight.stops == 0:
+            message = f"Low price alert! Only {cheapest_flight.price}USD to fly direct " \
+                      f"from {cheapest_flight.origin_airport} to {cheapest_flight.destination_airport} - {city['city']}, " \
+                      f"on {cheapest_flight.out_date} until {cheapest_flight.return_date}."
+        else:
+            message = f"Low price alert! Only {cheapest_flight.price}USD to fly " \
+                      f"from {cheapest_flight.origin_airport} to {cheapest_flight.destination_airport} - {city['city']}, " \
+                      f"with {cheapest_flight.stops} stop(s) " \
+                      f"departing on {cheapest_flight.out_date} and returning on {cheapest_flight.return_date}."
+
+
+        notification_manager.send_whatsapp(user_whatsapp_list, message_body=message)
 

@@ -55,6 +55,7 @@ class FlightSearch:
         self.amadeus_token_expiration = int(response.json()['expires_in'])
         self.update_env_file("AMADEUS_API_TOKEN", token)
         self.update_env_file("AMADEUS_TOKEN_EXPIRATION", self.amadeus_token_expiration)
+        time.sleep(2)
 
 
     @staticmethod
