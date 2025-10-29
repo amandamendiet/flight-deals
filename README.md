@@ -36,7 +36,7 @@ This project uses several small classes to keep logic clean and testable.
 
 ---
 
-## 📨 WhatsApp Message Example
+## WhatsApp Message Example
 
 `Low price alert! Only 275 USD to fly direct from JFK to CDG - Paris,
 on 2025-11-03 until 2025-11-12.`
